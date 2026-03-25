@@ -1,0 +1,83 @@
+# ===========================
+# Python
+# ===========================
+__pycache__/
+*.py[cod]
+*.so
+*.pyd
+*.pyo
+*.egg-info/
+*.egg
+*.manifest
+*.spec
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Jupyter/IPython
+.ipynb_checkpoints/
+.profile
+*.ipynb_convert
+hf-download.ipynb
+hf-upload.ipynb
+
+# ===========================
+# Project-specific
+# ===========================
+
+# Data
+data/*
+!data/pseudo_labels/
+data/pseudo_labels/*
+!data/pseudo_labels/.gitkeep
+
+# Pseudo Annotations
+semi_sup/pseudo_annotations/
+
+# Weights and checkpoints
+weights/
+
+# Experiment results, logs, and temp files
+experiments/
+zero_shot_ovod/evaluation_results/
+work_dirs/
+logs/
+*.log
+
+# Cache
+.cache/
+huggingface/
+*.pkl
+*.npz
+*.npy
+
+# ===========================
+# Vendored external modules
+# (track source code, ignore heavy runtime artifacts)
+# ===========================
+external_modules/**/__pycache__/
+external_modules/**/work_dirs/
+external_modules/**/checkpoints/
+external_modules/**/runs/
+external_modules/**/*.pth
+external_modules/**/*.pt
+external_modules/**/*.ckpt
+external_modules/**/*.log
+
+# ===========================
+# IDEs
+# ===========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ===========================
+# OS-specific
+# ===========================
+.DS_Store
+Thumbs.db
+data/pseudo_labels/.gitkeep
