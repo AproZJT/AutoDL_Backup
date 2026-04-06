@@ -1,5 +1,6 @@
 import argparse
 import json
+import time
 from collections import defaultdict
 from pathlib import Path
 from typing import Dict, List, Tuple
@@ -297,14 +298,28 @@ def main():
 
     predictions_by_image = organize_predictions(annotations, tau=args.tau)
     print(f"Initial filtered predictions (tau={args.tau}): {sum(len(v2) for v1 in predictions_by_image.values() for v2 in v1.values())}")
+    print(f"Processed images: {len(predictions_by_image)}")
 
     # Build image dimension lookup with fallback defaults
     image_dimensions = {
         int(img["id"]): (float(img.get("width", 1920)), float(img.get("height", 1080))) for img in images
     }
 
+    total_images = len(predictions_by_image)
+    processed_images_counter = 0
+    progress_step = 500
+    progress_start_time = time.time()
+
     fused_all = []
     for img_id, class_dict in predictions_by_image.items():
+        processed_images_counter += 1
+        if processed_images_counter % progress_step == 0 or processed_images_counter == total_images:
+            elapsed = time.time() - progress_start_time
+            pct = (processed_images_counter / max(1, total_images)) * 100.0
+            print(
+                f"[IMG_PROGRESS] processed={processed_images_counter}/{total_images} ({pct:.1f}%) | elapsed={elapsed:.1f}s",
+                flush=True,
+            )
         for class_id, preds in class_dict.items():
             clusters = build_iou_clusters(preds, iou_threshold=args.theta)
 

@@ -1,0 +1,23 @@
+# 忽略数据集和缓存
+data/
+datasets/
+__pycache__/
+*.pyc
+
+# 忽略所有的模型权重文件 (极其重要!)
+weights/
+*.pth
+*.pt
+*.ckpt
+
+# 忽略日志和临时输出
+work_dirs/
+*.log
+*.json
+sota_results*
+ablation_*
+
+# 忽略环境配置
+.env
+.vscode/
+.idea/
