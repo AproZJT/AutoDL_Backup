@@ -6,6 +6,10 @@ class_name = (
     'metal',
     'soft_plastic',
 )
+custom_imports = dict(
+    allow_failed_imports=False, imports=[
+        'custom_prompt_transforms',
+    ])
 data_root = './data/zerowaste-f'
 dataset_type = 'CocoDataset'
 default_hooks = dict(
@@ -22,7 +26,7 @@ env_cfg = dict(
     mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0))
 lang_model_name = 'bert-base-uncased'
 launcher = 'none'
-load_from = '/root/autodl-tmp/robust-waste-detection-main-improve/weights/gdino-swin-b/zerowaste_f_finetuned_best_coco_bbox_mAP.pth'
+load_from = 'weights/final_sota/best_swa_0.545.pth'
 log_level = 'INFO'
 log_processor = dict(by_epoch=True, type='LogProcessor', window_size=50)
 max_epochs = 12
@@ -250,6 +254,7 @@ test_dataloader = dict(
                 1333,
             ), type='FixScaleResize'),
             dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='InjectPrompt2'),
             dict(
                 meta_keys=(
                     'img_id',
@@ -275,8 +280,7 @@ test_evaluator = dict(
     classwise=True,
     format_only=False,
     metric='bbox',
-    outfile_prefix=
-    '/root/autodl-tmp/robust-waste-detection-main-improve/data/pseudo_labels/raw_model_b_s0010',
+    outfile_prefix='./data/pseudo_labels/test_prompt2',
     type='CocoMetric')
 test_pipeline = [
     dict(backend_args=None, type='LoadImageFromFile'),

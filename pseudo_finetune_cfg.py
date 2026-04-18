@@ -21,8 +21,7 @@ env_cfg = dict(
     dist_cfg=dict(backend='nccl'),
     mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0))
 lang_model_name = 'bert-base-uncased'
-launcher = 'none'
-load_from = '/root/autodl-tmp/robust-waste-detection-main-improve/weights/gdino-swin-b/zerowaste_f_finetuned_best_coco_bbox_mAP.pth'
+load_from = 'weights/final_sota/best_swa_0.545.pth'
 log_level = 'INFO'
 log_processor = dict(by_epoch=True, type='LogProcessor', window_size=50)
 max_epochs = 12
@@ -90,7 +89,7 @@ model = dict(
         with_cp=True),
     bbox_head=dict(
         contrastive_cfg=dict(bias=False, log_scale=0.0, max_text_len=256),
-        loss_bbox=dict(loss_weight=5.0, type='L1Loss'),
+        loss_bbox=dict(loss_weight=2.0, type='L1Loss'),
         loss_cls=dict(
             alpha=0.25,
             gamma=2.0,
@@ -174,7 +173,7 @@ model = dict(
     num_queries=900,
     positional_encoding=dict(
         normalize=True, num_feats=128, offset=0.0, temperature=20),
-    test_cfg=dict(max_per_img=300, rcnn=dict(score_thr=0.01)),
+    test_cfg=dict(max_per_img=300),
     train_cfg=dict(
         assigner=dict(
             match_costs=[
@@ -188,7 +187,7 @@ model = dict(
 num_classes = 4
 optim_wrapper = dict(
     clip_grad=dict(max_norm=0.1, norm_type=2),
-    optimizer=dict(lr=0.0001, type='AdamW', weight_decay=0.0001),
+    optimizer=dict(lr=1e-05, type='AdamW', weight_decay=0.0001),
     paramwise_cfg=dict(
         custom_keys=dict(
             absolute_pos_embed=dict(decay_mult=0.0),
@@ -275,8 +274,6 @@ test_evaluator = dict(
     classwise=True,
     format_only=False,
     metric='bbox',
-    outfile_prefix=
-    '/root/autodl-tmp/robust-waste-detection-main-improve/data/pseudo_labels/raw_model_b_s0010',
     type='CocoMetric')
 test_pipeline = [
     dict(backend_args=None, type='LoadImageFromFile'),
@@ -297,16 +294,43 @@ test_pipeline = [
         ),
         type='PackDetInputs'),
 ]
-train_cfg = dict(max_epochs=12, type='EpochBasedTrainLoop', val_interval=1)
+train_cfg = dict(max_epochs=1, type='EpochBasedTrainLoop', val_interval=1)
 train_dataloader = dict(
     batch_sampler=dict(type='AspectRatioBatchSampler'),
     batch_size=2,
     dataset=dict(
-        ann_file='annotations/instances_train2017.json',
-        backend_args=None,
-        data_prefix=dict(img='train2017/'),
-        data_root='data/coco/',
-        filter_cfg=dict(filter_empty_gt=False, min_size=32),
+        ann_file='test/pseudo_labels.json',
+        data_prefix=dict(img='test/data'),
+        data_root='./data/zerowaste-f',
+        metainfo=dict(
+            classes=(
+                'rigid_plastic',
+                'cardboard',
+                'metal',
+                'soft_plastic',
+            ),
+            palette=[
+                (
+                    0,
+                    128,
+                    255,
+                ),
+                (
+                    255,
+                    165,
+                    0,
+                ),
+                (
+                    220,
+                    20,
+                    60,
+                ),
+                (
+                    34,
+                    139,
+                    34,
+                ),
+            ]),
         pipeline=[
             dict(backend_args=None, type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
@@ -660,4 +684,4 @@ visualizer = dict(
     vis_backends=[
         dict(type='LocalVisBackend'),
     ])
-work_dir = 'experiments/swin-b_fine-tuned_zerowaste-f_evaluation'
+work_dir = './work_dirs/pseudo_finetune_ultimate'

@@ -20,4 +20,5 @@ ablation_*
 # 忽略环境配置
 .env
 .vscode/
-.idea/
+.idea/*.pth
+*.pt

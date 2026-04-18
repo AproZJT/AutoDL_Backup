@@ -6,6 +6,10 @@ class_name = (
     'metal',
     'soft_plastic',
 )
+custom_imports = dict(
+    allow_failed_imports=False, imports=[
+        'custom_prompt_transforms',
+    ])
 data_root = './data/zerowaste-f'
 dataset_type = 'CocoDataset'
 default_hooks = dict(
@@ -21,8 +25,7 @@ env_cfg = dict(
     dist_cfg=dict(backend='nccl'),
     mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0))
 lang_model_name = 'bert-base-uncased'
-launcher = 'none'
-load_from = '/root/autodl-tmp/robust-waste-detection-main-improve/weights/gdino-swin-b/zerowaste_f_finetuned_best_coco_bbox_mAP.pth'
+load_from = 'https://download.openmmlab.com/mmdetection/v3.0/grounding_dino/groundingdino_swint_ogc_mmdet-822d7e9d.pth'
 log_level = 'INFO'
 log_processor = dict(by_epoch=True, type='LogProcessor', window_size=50)
 max_epochs = 12
@@ -174,7 +177,7 @@ model = dict(
     num_queries=900,
     positional_encoding=dict(
         normalize=True, num_feats=128, offset=0.0, temperature=20),
-    test_cfg=dict(max_per_img=300, rcnn=dict(score_thr=0.01)),
+    test_cfg=dict(max_per_img=300),
     train_cfg=dict(
         assigner=dict(
             match_costs=[
@@ -250,6 +253,7 @@ test_dataloader = dict(
                 1333,
             ), type='FixScaleResize'),
             dict(type='LoadAnnotations', with_bbox=True),
+            dict(type='InjectPrompt2'),
             dict(
                 meta_keys=(
                     'img_id',
@@ -275,8 +279,6 @@ test_evaluator = dict(
     classwise=True,
     format_only=False,
     metric='bbox',
-    outfile_prefix=
-    '/root/autodl-tmp/robust-waste-detection-main-improve/data/pseudo_labels/raw_model_b_s0010',
     type='CocoMetric')
 test_pipeline = [
     dict(backend_args=None, type='LoadImageFromFile'),

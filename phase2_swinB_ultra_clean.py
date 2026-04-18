@@ -9,8 +9,13 @@ class_name = (
 data_root = './data/zerowaste-f'
 dataset_type = 'CocoDataset'
 default_hooks = dict(
-    checkpoint=dict(interval=1, type='CheckpointHook'),
-    logger=dict(interval=10, type='LoggerHook'),
+    checkpoint=dict(
+        interval=1,
+        max_keep_ckpts=3,
+        rule='greater',
+        save_best='coco/bbox_mAP',
+        type='CheckpointHook'),
+    logger=dict(interval=50, type='LoggerHook'),
     param_scheduler=dict(type='ParamSchedulerHook'),
     sampler_seed=dict(type='DistSamplerSeedHook'),
     timer=dict(type='IterTimerHook'),
@@ -21,8 +26,7 @@ env_cfg = dict(
     dist_cfg=dict(backend='nccl'),
     mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0))
 lang_model_name = 'bert-base-uncased'
-launcher = 'none'
-load_from = '/root/autodl-tmp/robust-waste-detection-main-improve/weights/gdino-swin-b/zerowaste_f_finetuned_best_coco_bbox_mAP.pth'
+load_from = 'https://download.openmmlab.com/mmdetection/v3.0/grounding_dino/groundingdino_swint_ogc_mmdet-822d7e9d.pth'
 log_level = 'INFO'
 log_processor = dict(by_epoch=True, type='LogProcessor', window_size=50)
 max_epochs = 12
@@ -174,7 +178,7 @@ model = dict(
     num_queries=900,
     positional_encoding=dict(
         normalize=True, num_feats=128, offset=0.0, temperature=20),
-    test_cfg=dict(max_per_img=300, rcnn=dict(score_thr=0.01)),
+    test_cfg=dict(max_per_img=300),
     train_cfg=dict(
         assigner=dict(
             match_costs=[
@@ -187,6 +191,7 @@ model = dict(
     with_box_refine=True)
 num_classes = 4
 optim_wrapper = dict(
+    accumulative_counts=4,
     clip_grad=dict(max_norm=0.1, norm_type=2),
     optimizer=dict(lr=0.0001, type='AdamW', weight_decay=0.0001),
     paramwise_cfg=dict(
@@ -196,12 +201,16 @@ optim_wrapper = dict(
     type='OptimWrapper')
 param_scheduler = [
     dict(
+        begin=0, by_epoch=False, end=1000, start_factor=0.001,
+        type='LinearLR'),
+    dict(
         begin=0,
         by_epoch=True,
-        end=12,
+        end=16,
         gamma=0.1,
         milestones=[
             11,
+            14,
         ],
         type='MultiStepLR'),
 ]
@@ -275,8 +284,6 @@ test_evaluator = dict(
     classwise=True,
     format_only=False,
     metric='bbox',
-    outfile_prefix=
-    '/root/autodl-tmp/robust-waste-detection-main-improve/data/pseudo_labels/raw_model_b_s0010',
     type='CocoMetric')
 test_pipeline = [
     dict(backend_args=None, type='LoadImageFromFile'),
@@ -297,16 +304,27 @@ test_pipeline = [
         ),
         type='PackDetInputs'),
 ]
-train_cfg = dict(max_epochs=12, type='EpochBasedTrainLoop', val_interval=1)
+train_cfg = dict(max_epochs=16, type='EpochBasedTrainLoop', val_interval=1)
 train_dataloader = dict(
     batch_sampler=dict(type='AspectRatioBatchSampler'),
-    batch_size=2,
+    batch_size=4,
     dataset=dict(
-        ann_file='annotations/instances_train2017.json',
+        ann_file=
+        '/root/autodl-tmp/robust-waste-detection-main-improve/data/zerowaste-f/merged_train_labels_ultra_clean.json',
         backend_args=None,
-        data_prefix=dict(img='train2017/'),
-        data_root='data/coco/',
-        filter_cfg=dict(filter_empty_gt=False, min_size=32),
+        data_prefix=dict(
+            img=
+            '/root/autodl-tmp/robust-waste-detection-main-improve/data/zerowaste-f/train/data/'
+        ),
+        data_root=None,
+        filter_cfg=dict(filter_empty_gt=False, min_size=0),
+        metainfo=dict(
+            classes=(
+                'rigid_plastic',
+                'cardboard',
+                'metal',
+                'soft_plastic',
+            )),
         pipeline=[
             dict(backend_args=None, type='LoadImageFromFile'),
             dict(type='LoadAnnotations', with_bbox=True),
@@ -458,9 +476,9 @@ train_dataloader = dict(
         ],
         return_classes=True,
         type='CocoDataset'),
-    num_workers=2,
+    num_workers=4,
     persistent_workers=True,
-    sampler=dict(shuffle=True, type='DefaultSampler'))
+    sampler=dict(type='ClassAwareSampler'))
 train_pipeline = [
     dict(backend_args=None, type='LoadImageFromFile'),
     dict(type='LoadAnnotations', with_bbox=True),
@@ -614,10 +632,21 @@ val_cfg = dict(type='ValLoop')
 val_dataloader = dict(
     batch_size=1,
     dataset=dict(
-        ann_file='annotations/instances_val2017.json',
+        ann_file=
+        '/root/autodl-tmp/robust-waste-detection-main-improve/data/zerowaste-f/val/labels.json',
         backend_args=None,
-        data_prefix=dict(img='val2017/'),
-        data_root='data/coco/',
+        data_prefix=dict(
+            img=
+            '/root/autodl-tmp/robust-waste-detection-main-improve/data/zerowaste-f/val/data/'
+        ),
+        data_root=None,
+        metainfo=dict(
+            classes=(
+                'rigid_plastic',
+                'cardboard',
+                'metal',
+                'soft_plastic',
+            )),
         pipeline=[
             dict(backend_args=None, type='LoadImageFromFile'),
             dict(keep_ratio=True, scale=(
@@ -645,7 +674,8 @@ val_dataloader = dict(
     persistent_workers=True,
     sampler=dict(shuffle=False, type='DefaultSampler'))
 val_evaluator = dict(
-    ann_file='data/coco/annotations/instances_val2017.json',
+    ann_file=
+    '/root/autodl-tmp/robust-waste-detection-main-improve/data/zerowaste-f/val/labels.json',
     backend_args=None,
     classwise=True,
     format_only=False,
@@ -660,4 +690,4 @@ visualizer = dict(
     vis_backends=[
         dict(type='LocalVisBackend'),
     ])
-work_dir = 'experiments/swin-b_fine-tuned_zerowaste-f_evaluation'
+work_dir = './work_dirs/phase2_swinB_ultra_clean'

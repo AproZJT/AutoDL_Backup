@@ -1,0 +1,12 @@
+Traceback (most recent call last):
+  File "external_modules/mmdetection/tools/train.py", line 121, in <module>
+    main()
+  File "external_modules/mmdetection/tools/train.py", line 68, in main
+    cfg = Config.fromfile(args.config)
+  File "/root/miniconda3/envs/mmdet-grounding-dino/lib/python3.8/site-packages/mmengine/config/config.py", line 461, in fromfile
+    cfg_dict, cfg_text, env_variables = Config._file2dict(
+  File "/root/miniconda3/envs/mmdet-grounding-dino/lib/python3.8/site-packages/mmengine/config/config.py", line 856, in _file2dict
+    check_file_exist(filename)
+  File "/root/miniconda3/envs/mmdet-grounding-dino/lib/python3.8/site-packages/mmengine/utils/path.py", line 23, in check_file_exist
+    raise FileNotFoundError(msg_tmpl.format(filename))
+FileNotFoundError: file "/root/autodl-tmp/robust-waste-detection-main-improve/" does not exist

@@ -22,7 +22,7 @@ env_cfg = dict(
     mp_cfg=dict(mp_start_method='fork', opencv_num_threads=0))
 lang_model_name = 'bert-base-uncased'
 launcher = 'none'
-load_from = '/root/autodl-tmp/robust-waste-detection-main-improve/weights/gdino-swin-b/zerowaste_f_finetuned_best_coco_bbox_mAP.pth'
+load_from = 'weights/final_sota/best_swa_0.545.pth'
 log_level = 'INFO'
 log_processor = dict(by_epoch=True, type='LogProcessor', window_size=50)
 max_epochs = 12
@@ -174,7 +174,7 @@ model = dict(
     num_queries=900,
     positional_encoding=dict(
         normalize=True, num_feats=128, offset=0.0, temperature=20),
-    test_cfg=dict(max_per_img=300, rcnn=dict(score_thr=0.01)),
+    test_cfg=dict(max_per_img=300),
     train_cfg=dict(
         assigner=dict(
             match_costs=[
@@ -210,9 +210,9 @@ test_cfg = dict(type='TestLoop')
 test_dataloader = dict(
     batch_size=4,
     dataset=dict(
-        ann_file='test/labels.json',
+        ann_file='unlabeled/labels.json',
         backend_args=None,
-        data_prefix=dict(img='test/data'),
+        data_prefix=dict(img='train/data/'),
         data_root='./data/zerowaste-f',
         metainfo=dict(
             classes=(
@@ -275,8 +275,7 @@ test_evaluator = dict(
     classwise=True,
     format_only=False,
     metric='bbox',
-    outfile_prefix=
-    '/root/autodl-tmp/robust-waste-detection-main-improve/data/pseudo_labels/raw_model_b_s0010',
+    outfile_prefix='./data/pseudo_labels/unlabeled_raw',
     type='CocoMetric')
 test_pipeline = [
     dict(backend_args=None, type='LoadImageFromFile'),

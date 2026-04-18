@@ -1,0 +1,13 @@
+# 模型权重 (绝对不能传)
+*.pth
+*.pt
+*.ckpt
+
+# 数据集和缓存
+data/
+work_dirs/
+__pycache__/
+*.pyc
+
+# 隐藏的环境文件
+.env
